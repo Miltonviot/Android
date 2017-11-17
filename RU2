@@ -1,0 +1,83 @@
+package com.example.bronsomjhonsom.telainicial;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+
+public class Inicio extends AppCompatActivity {
+
+    Button button;
+    ArrayList<HashMap<String, String>> arraylist;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_inicio);
+
+        System.out.println("anus");
+
+        button = (Button) findViewById(R.id.button);
+        final EditText textView2 = findViewById(R.id.editText);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final StringBuilder builder = new StringBuilder();
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        takeTable();
+                    }
+                });
+                t.start();
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                String s = builder.toString();
+                textView2.setText(s);
+
+            }
+        });
+
+
+    }
+
+    public void takeTable() {
+        Document doc = null;
+        try{
+            doc = Jsoup.connect("http://www.uffs.edu.br/institucional/pro-reitorias/assuntos-estudantis/restaurantes-universitarios/campus_chapeco/texto-rico").get();
+
+            arraylist = new ArrayList<HashMap<String, String>>();
+                Element table = doc.select("table").get(0);
+                Elements rows = table.select("tr");
+
+
+                for (int i=1; i < rows.size();i++) {
+                    HashMap<String, String> map = new HashMap<String, String>();
+                    Element row = rows.get(i);
+                    Elements coluns = row.select("td");
+                    for (int b =0;b < coluns.size();b++){
+                        System.out.println("aqui "+coluns.get(b).text());
+                        textView2.setText(coluns.get(b).text());
+
+                    }
+
+                }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
