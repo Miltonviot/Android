@@ -1,0 +1,112 @@
+package com.example.bronsomjhonsom.telainicial;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+
+public class Inicio extends AppCompatActivity {
+
+    Button button;
+    ArrayList<HashMap<String, String>> arraylist;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_inicio);
+
+        button = (Button) findViewById(R.id.button);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final StringBuilder builder = new StringBuilder();
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        takeTable();
+                    }
+                });
+                t.start();
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public class Prato {
+        ArrayList<Prato> Pratos = new ArrayList();
+        String NomePrato;
+
+        public Prato(String NomePrato) {
+            this.NomePrato = NomePrato;
+        }
+
+        //seter
+        public void setPrato(String NomePrato) {
+            this.NomePrato = NomePrato;
+        }
+
+        //geter
+        public String getNomePrato() {
+            return this.NomePrato;
+        }
+
+        public void exibirDados() {
+
+            System.out.println("Prato<" + this.NomePrato + ">");
+        }
+
+        public void mostrarPratos() {
+            for (int i = 0; i < Pratos.size(); i++) {
+                Prato p = Pratos.get(i);
+                p.exibirDados();
+            }
+        }
+
+
+    }
+
+    public void takeTable() {
+        Document doc = null;
+        try {
+            doc = Jsoup.connect("http://www.uffs.edu.br/campi/chapeco/restaurante_universitario").get();
+
+            // Localiza a primeira tabela
+            for (Element table : doc.select("table")) {
+
+                // Localiza cada uma das linhas
+                for (Element row : table.select("tr:gt(0)")) {
+
+                    // Localiza cada uma das celulas de cada linha
+                    Elements tds = row.select("td");
+                    for (Element line : tds) {
+
+                        // Pega o texto contendo o ingrediente de dentro da celula
+                        String s = line.text();
+
+                        Prato p = new Prato(s);
+                        p.mostrarPratos();
+                        //System.out.println(s);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
